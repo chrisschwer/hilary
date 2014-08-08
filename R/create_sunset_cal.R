@@ -8,6 +8,7 @@
 #' @param num.days Number of days you want sunset appointments for.
 #' @param file Filename for outputted .CSV file (to be uploaded to Google Calendar).
 #' @param location Location of sunset appointment. Will be input into Google Calendar event as the event location.
+#' @param wkday Vector of 7 boolean indicators, whether Sunday to Saturday should be included in calendar.
 #' @importFrom StreamMetabolism sunrise.set
 #' @export
 #' @examples \dontrun{
@@ -21,7 +22,8 @@ create_sunset_cal <- function(date="2014/01/01",
                               timezone = "America/New_York",
                               num.days = 365,
                               file="sunset.csv",
-                              location = "Brooklyn Heights Promenade, Brooklyn, NY 11201"){
+                              location = "Brooklyn Heights Promenade, Brooklyn, NY 11201",
+                              wkday = c(TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE)){
   
   location <- gsub(",", "", location)
   
@@ -31,13 +33,17 @@ create_sunset_cal <- function(date="2014/01/01",
     length.out = num.days
   )
   
-  sunset_times <- sunrise.set(
+    sunset_times <- sunrise.set(
     lat = lat, 
     long = long, 
     date = date, 
     timezone = timezone,
     num.days = num.days
   )$sunset
+  
+  considerdate <- wkday[as.POSIXlt(dates)$wday+1] # Calculates weekday as number from date, looks up Boolean in parameter wkday
+  dates <- dates[considerdate] # Reduces list of dates to those which fall on weekdays to consider
+  sunset_times <- sunset_times[considerdate] # Reduces list of sunset times to those which fall on weekdays to consider
   
   nms <- c(
     'Subject',
